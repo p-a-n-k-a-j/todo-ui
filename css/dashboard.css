@@ -1,0 +1,17 @@
+
+  body { background: #f8f9fa; }
+        .todo-card.completed { opacity: 0.65; text-decoration: line-through; }
+        .priority-high { color: #dc3545; }
+        .priority-medium { color: #ffc107; }
+        .priority-low { color: #198754; }
+        .due-soon { color: #e07b39; font-weight: 600; }
+
+.welcome-box {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.welcome-box:hover {
+  background-color: #f0f8ff;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}

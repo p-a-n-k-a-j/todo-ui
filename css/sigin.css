@@ -1,0 +1,42 @@
+ body {
+            background: linear-gradient(135deg,#f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            border-radius: .75rem;
+            box-shadow: 0 10px 30px rgba(20,20,50,.08);
+        }
+        .input-group .form-control:focus {
+            box-shadow: none;
+            border-color: #6c5ce7;
+        }
+        .material-icon {
+            font-family: 'Material Icons';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        .eye-btn {
+            background: transparent;
+            border: none;
+            padding: 0 .5rem;
+            color: #495057;
+        }
+        .help-text {
+            font-size: .875rem;
+        }

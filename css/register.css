@@ -1,0 +1,74 @@
+     /* Material-like card and inputs */
+        body {
+            background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            padding: 2rem;
+        }
+
+        .card-signup {
+            width: 100%;
+            max-width: 420px;
+            border: 0;
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(32, 41, 77, 0.12);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(90deg,#6c63ff,#3ea0ff);
+            color: white;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .brand {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #6c63ff;
+        }
+
+        .input-icon {
+            width: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .strength-bar {
+            height: 6px;
+            border-radius: 6px;
+            background: #e6e6e6;
+            overflow: hidden;
+        }
+
+        .strength-bar > i {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg,#ff6b6b,#6c63ff);
+            transition: width 240ms ease;
+        }
+
+        .valid-feedback {
+            display: none;
+        }
+        .is-valid + .valid-feedback { display:block; }
+        .is-invalid + .invalid-feedback { display:block; }
+
+        /* Ensure muted small text is readable on the dark card header */
+        .card-header .small-muted { color: rgba(255,255,255,0.9); }
+
+        .small-muted { color: #6b7280; font-size: .85rem; }

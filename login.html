@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sign In</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome (eye icon) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Material Icons (simple Material look) -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/sigin.css" rel="stylesheet" />
+
+</head>
+<body>
+    <main class="card p-4">
+        <div class="text-center mb-3">
+            <span class="material-icon" style="font-size:40px;color:#6c5ce7">lock</span>
+            <h4 class="mt-2">Sign in</h4>
+            <p class="text-muted mb-0">Welcome back — please sign in to your account</p>
+        </div>
+
+        <form id="signinForm" novalidate>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-user"></i></span>
+                    <input id="email" name="email" type="email" class="form-control" placeholder="you@example.com" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-key"></i></span>
+                    <input id="password" name="password" type="password" class="form-control" placeholder="Your password" required>
+                    <button type="button" class="eye-btn" id="togglePwd" aria-label="Toggle password visibility" title="Show password">
+                        <i id="eyeIcon" class="fa fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                </div>
+                <a href="#" class="help-text">Forgot password?</a>
+            </div>
+
+            <div id="alert" class="alert alert-danger d-none p-2 mb-3" role="alert"></div>
+
+            <div class="d-grid">
+                <button id="submitBtn" class="btn btn-primary" type="submit">
+                    <span id="btnText">Sign in</span>
+                    <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <div class="text-center mt-3">
+                <p class="text-muted mb-0">New here? <a href="register.html" class="btn btn-outline-primary btn-sm ms-2">Register</a></p>
+            </div>
+        </form>
+    </main>
+    <script src="js/signin.js"></script>
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

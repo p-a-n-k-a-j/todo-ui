@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign Up — ToDo App</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <link href="css/register.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="card card-signup">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div>
+                <div class="brand h5 mb-0">ToDoApp</div>
+                <small class="small-muted">Create your account</small>
+            </div>
+            <i class="fa-solid fa-list-check fa-2x opacity-85"></i>
+        </div>
+
+        <div class="card-body p-4">
+            <form id="signupForm" novalidate>
+                <!-- Username -->
+                <div class="mb-3">
+                    <label class="form-label small-muted">Username</label>
+                    <div class="input-group">
+                        <span class="input-icon bg-white border rounded-start"
+                              onmouseover="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                              onmouseout="this.style.background=''; this.style.color='';"
+                              onfocus="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                              onblur="this.style.background=''; this.style.color='';" tabindex="0">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input id="username" name="username" type="text" class="form-control" placeholder="john_doe" required
+                                     aria-describedby="usernameHelp" />
+                    </div>
+                    <div id="usernameHelp" class="form-text small-muted">Choose a display name (3-30 chars).</div>
+                    <div class="invalid-feedback">Please enter a valid username (3-30 chars).</div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label small-muted">Email</label>
+                    <div class="input-group">
+                        <span class="input-icon bg-white border rounded-start"
+                              onmouseover="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                              onmouseout="this.style.background=''; this.style.color='';"
+                              onfocus="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                              onblur="this.style.background=''; this.style.color='';" tabindex="0">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input id="email" name="email" type="email" class="form-control" placeholder="you@example.com" required
+                                     aria-describedby="emailHelp" />
+                    </div>
+                    <div id="emailHelp" class="form-text small-muted">We'll never share your email.</div>
+                    <div class="invalid-feedback">Please provide a valid email address.</div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label class="form-label small-muted">Password</label>
+                    <div class="input-group align-items-center">
+                        <span class="input-icon bg-white border rounded-start d-flex align-items-center justify-content-center"
+                            style="min-width:42px; width:42px; height: calc(2.25rem + 2px); line-height:1;"
+                            onmouseover="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                            onmouseout="this.style.background=''; this.style.color='';"
+                            onfocus="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                            onblur="this.style.background=''; this.style.color='';" tabindex="0">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input id="password" name="password" type="password" class="form-control" placeholder="Create password" required
+                                     aria-describedby="passwordHelp" />
+                        <span class="input-group-text bg-white border-start-0 password-toggle d-flex align-items-center justify-content-center"
+                            id="togglePassword" role="button" title="Show/hide"
+                            tabindex="0"
+                            style="min-width:42px; width:42px; height: calc(2.25rem + 2px); line-height:1; padding:0.375rem 0;"
+                            onmouseover="this.style.background='#eef2ff'; this.style.color='#3ea0ff';"
+                            onmouseout="this.style.background=''; this.style.color='';"
+                            onfocus="this.style.background='#eef2ff'; this.style.color='#3ea0ff';"
+                            onblur="this.style.background=''; this.style.color='';">
+                            <i class="fa-solid fa-eye" style="font-size:1rem; line-height:1;"></i>
+                        </span>
+                    </div>
+                    <div id="passwordHelp" class="form-text small-muted">Min 8 chars, include upper, lower, number & symbol.</div>
+                    <div class="mt-2 strength-bar">
+                        <i id="strengthFill"></i>
+                    </div>
+                    <div id="passwordFeedback" class="invalid-feedback">Password is too weak.</div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label class="form-label small-muted">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-icon bg-white border rounded-start"
+                              onmouseover="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                              onmouseout="this.style.background=''; this.style.color='';"
+                              onfocus="this.style.background='#f8fafc'; this.style.color='#6c63ff';"
+                              onblur="this.style.background=''; this.style.color='';" tabindex="0">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
+                        <input id="confirmPassword" name="confirmPassword" type="password" class="form-control" placeholder="Repeat password" required />
+                        <span class="input-group-text bg-white border-start-0 password-toggle" id="toggleConfirm" role="button" title="Show/hide"
+                              tabindex="0"
+                              onmouseover="this.style.background='#eef2ff'; this.style.color='#3ea0ff';"
+                              onmouseout="this.style.background=''; this.style.color='';"
+                              onfocus="this.style.background='#eef2ff'; this.style.color='#3ea0ff';"
+                              onblur="this.style.background=''; this.style.color='';">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
+                    <div class="invalid-feedback">Passwords do not match.</div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button id="submitBtn" type="submit" class="btn btn-primary btn-lg" disabled
+                            onmouseover="this.style.boxShadow='0 8px 24px rgba(62,160,255,0.18)'; this.style.transform='translateY(-2px)';"
+                            onmouseout="this.style.boxShadow=''; this.style.transform='';"
+                            onfocus="this.style.boxShadow='0 8px 24px rgba(62,160,255,0.18)'; this.style.transform='translateY(-2px)';"
+                            onblur="this.style.boxShadow=''; this.style.transform='';">
+                        <i class="fa-solid fa-user-plus me-2"></i>Create account
+                    </button>
+                </div>
+
+                <div class="text-center small-muted">
+                    Already have an account? <a href="./login.html" class="text-decoration-none"
+                        onmouseover="this.style.textDecoration='underline'; this.style.color='#6c63ff';"
+                        onmouseout="this.style.textDecoration='none'; this.style.color='';"
+                        onfocus="this.style.textDecoration='underline'; this.style.color='#6c63ff';"
+                        onblur="this.style.textDecoration='none'; this.style.color='';">Sign in</a>
+                </div>
+            </form>
+            <div id="alertPlaceholder" class="mt-3"></div>
+        </div>
+    </div>
+    </div></button>
+
+    <!-- Bootstrap JS & dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Simple DOM helpers
+        const $ = (sel) => document.querySelector(sel);
+
+        const username = $('#username');
+        const email = $('#email');
+        const password = $('#password');
+        const confirmPassword = $('#confirmPassword');
+        const submitBtn = $('#submitBtn');
+        const strengthFill = $('#strengthFill');
+        const passwordFeedback = $('#passwordFeedback');
+        const alertPlaceholder = $('#alertPlaceholder');
+
+        // Toggle show/hide password
+        document.getElementById('togglePassword').addEventListener('click', () => {
+            const t = password;
+            const icon = document.querySelector('#togglePassword i');
+            if (t.type === 'password') { t.type = 'text'; icon.className = 'fa-solid fa-eye-slash'; }
+            else { t.type = 'password'; icon.className = 'fa-solid fa-eye'; }
+        });
+        document.getElementById('toggleConfirm').addEventListener('click', () => {
+            const t = confirmPassword;
+            const icon = document.querySelector('#toggleConfirm i');
+            if (t.type === 'password') { t.type = 'text'; icon.className = 'fa-solid fa-eye-slash';}
+            else { t.type = 'password'; icon.className = 'fa-solid fa-eye'; }
+        });
+
+        // Validation helpers
+        function validateUsername() {
+            const v = username.value.trim();
+            const ok = v.length >= 3 && v.length <= 30;
+            toggleValidity(username, ok);
+            return ok;
+        }
+
+        function validateEmail() {
+            const v = email.value.trim();
+            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+            toggleValidity(email, ok);
+            return ok;
+        }
+
+        function passwordStrength(pw) {
+            let score = 0;
+            if (pw.length >= 8) score++;
+            if (/[A-Z]/.test(pw)) score++;
+            if (/[a-z]/.test(pw)) score++;
+            if (/\d/.test(pw)) score++;
+            if (/[\W_]/.test(pw)) score++;
+            return score; // 0..5
+        }
+
+        function updateStrengthBar() {
+            const pw = password.value;
+            const s = passwordStrength(pw);
+            const percent = Math.min(100, (s / 5) * 100);
+            strengthFill.style.width = percent + '%';
+
+            // color by score
+            let color = 'linear-gradient(90deg,#ff6b6b,#ffb86b)'; // weak
+            if (s >= 4) color = 'linear-gradient(90deg,#6c63ff,#3ea0ff)'; // strong
+            else if (s === 3) color = 'linear-gradient(90deg,#ffd166,#6c63ff)'; // medium
+            strengthFill.style.background = color;
+
+            const ok = s >= 4;
+            toggleValidity(password, ok);
+            if (!ok) passwordFeedback.textContent = 'Use at least 8 chars, incl. upper, lower, number & symbol.';
+            return ok;
+        }
+
+        function validateConfirm() {
+            const ok = password.value && confirmPassword.value === password.value;
+            toggleValidity(confirmPassword, ok);
+            return ok;
+        }
+
+        function toggleValidity(el, valid) {
+            el.classList.remove('is-valid', 'is-invalid');
+            if (valid) el.classList.add('is-valid');
+            else el.classList.add('is-invalid');
+        }
+
+        function updateFormState() {
+            const ok = validateUsername() && validateEmail() && updateStrengthBar() && validateConfirm();
+            submitBtn.disabled = !ok;
+            return ok;
+        }
+
+        // Real-time listeners
+        username.addEventListener('input', () => { validateUsername(); updateFormState(); });
+        email.addEventListener('input', () => { validateEmail(); updateFormState(); });
+        password.addEventListener('input', () => { updateStrengthBar(); validateConfirm(); updateFormState(); });
+        confirmPassword.addEventListener('input', () => { validateConfirm(); updateFormState(); });
+
+        // Form submit (demo: prevents navigation and shows success)
+        document.getElementById('signupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!updateFormState()) return;
+            // Simulate successful registration (replace with actual API call)
+            alertPlaceholder.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Success!</strong> Account created for <strong>${escapeHtml(username.value)}</strong>.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`;
+            // Optionally reset
+            // e.target.reset();
+            // reset styles
+        });
+
+        // Simple escape for output
+        function escapeHtml(s) {
+            return s.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        // Initial state
+        updateStrengthBar();
+    </script>
+</body>
+</html>
