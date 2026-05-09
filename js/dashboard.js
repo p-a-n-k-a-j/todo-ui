@@ -9,6 +9,7 @@
         let themeRecognition = null;
         let isThemeListening = false;
         let shouldKeepThemeListening = true;
+        let isReminderAnnouncementSpeaking = false;
 
         function applyTheme(theme) {
             clearCustomThemeStyles();
@@ -52,9 +53,9 @@
             if (handleScrollCommand(spokenText)) return;
             if (handleCloseTaskModalCommand(spokenText)) return;
             if (handleAddTaskCommand(spokenText)) return;
+            if (handleReminderCommand(spokenText)) return;
             if (handleFilterCommand(spokenText)) return;
             if (handleSortCommand(spokenText)) return;
-            handleReminderCommand(spokenText);
         }
 
         function handleThemeCommand(spokenText) {
@@ -214,12 +215,62 @@
         }
 
         function handleReminderCommand(spokenText) {
-            if (spokenText.includes('announce reminders') || spokenText.includes('read reminders') || spokenText.includes('read my reminders') || spokenText.includes('task reminders')) {
+            const words = getSpeechKeywords(spokenText);
+            if (isReminderVoiceRequest(words)) {
                 announceDueDateReminders();
                 return true;
             }
 
             return false;
+        }
+
+        function isReminderVoiceRequest(words) {
+            const normalizedWords = words.map(normalizeReminderKeyword);
+            const reminderWords = ['reminder', 'reminders', 'remind'];
+            const taskWords = ['task', 'tasks', 'work', 'todo', 'todos'];
+            const todayWords = ['today', 'todays'];
+            const askWords = ['announce', 'read', 'speak', 'tell', 'show', 'dikha', 'bata', 'what', 'list'];
+
+            const hasReminderWord = hasAnyKeyword(normalizedWords, reminderWords);
+            const hasTaskWord = hasAnyKeyword(normalizedWords, taskWords);
+            const hasTodayWord = hasAnyKeyword(normalizedWords, todayWords);
+            const hasAskWord = hasAnyKeyword(normalizedWords, askWords);
+            const hasMyWord = normalizedWords.includes('my');
+
+            if (hasReminderWord) return true;
+            if (normalizedWords.includes('remind') && normalizedWords.includes('me')) return true;
+            if (hasTodayWord && hasTaskWord) return true;
+            if (hasMyWord && hasTaskWord && hasTodayWord) return true;
+            if (hasAskWord && hasTaskWord && hasTodayWord) return true;
+
+            return false;
+        }
+
+        function normalizeReminderKeyword(word) {
+            const reminderKeywordMap = {
+                remainder: 'reminder',
+                remainders: 'reminders',
+                remender: 'reminder',
+                remenders: 'reminders',
+                remindar: 'reminder',
+                remindars: 'reminders',
+                riminder: 'reminder',
+                riminders: 'reminders',
+                rimandar: 'reminder',
+                rimandars: 'reminders',
+                dikhao: 'dikha',
+                dekha: 'dikha',
+                batao: 'bata',
+                batana: 'bata',
+                btaa: 'bata',
+                bta: 'bata',
+                bataa: 'bata',
+                bataao: 'bata',
+                kaam: 'work',
+                kam: 'work'
+            };
+
+            return reminderKeywordMap[word] || word;
         }
 
         function setSort(sortValue, message) {
@@ -280,7 +331,7 @@
                 return;
             }
 
-            speakMessage(reminders.join(' '));
+            speakReminderMessages(reminders);
         }
 
         function speakMessage(message) {
@@ -290,7 +341,58 @@
             }
 
             window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
+            speakReminderQueue([message]);
+        }
+
+        function speakReminderMessages(messages) {
+            if (!('speechSynthesis' in window)) {
+                console.log(messages.join(' '));
+                return;
+            }
+
+            speakReminderQueue(messages);
+        }
+
+        function speakReminderQueue(messages) {
+            window.speechSynthesis.cancel();
+            pauseRecognitionForReminderSpeech();
+
+            const cleanMessages = messages.filter(Boolean);
+            if (cleanMessages.length === 0) {
+                resumeRecognitionAfterReminderSpeech();
+                return;
+            }
+
+            cleanMessages.forEach((message, index) => {
+                const utterance = createReminderUtterance(message);
+
+                if (index === cleanMessages.length - 1) {
+                    utterance.onend = resumeRecognitionAfterReminderSpeech;
+                    utterance.onerror = resumeRecognitionAfterReminderSpeech;
+                }
+
+                window.speechSynthesis.speak(utterance);
+            });
+        }
+
+        function pauseRecognitionForReminderSpeech() {
+            isReminderAnnouncementSpeaking = true;
+
+            if (themeRecognition && isThemeListening) {
+                try {
+                    themeRecognition.stop();
+                } catch (error) {
+                    console.warn('Voice recognition could not pause for reminder speech:', error);
+                }
+            }
+        }
+
+        function resumeRecognitionAfterReminderSpeech() {
+            isReminderAnnouncementSpeaking = false;
+
+            if (shouldKeepThemeListening) {
+                setTimeout(startThemeRecognition, 400);
+            }
         }
 
         function capitalize(value) {
@@ -399,14 +501,20 @@
             themeRecognition.lang = 'en-US';
             themeRecognition.continuous = true;
             themeRecognition.interimResults = false;
+            themeRecognition.maxAlternatives = 5;
 
             themeRecognition.onstart = () => {
                 isThemeListening = true;
             };
 
             themeRecognition.onresult = (event) => {
-                const transcript = event.results[event.results.length - 1][0].transcript;
-                handleVoiceCommand(transcript);
+                const result = event.results[event.results.length - 1];
+                const transcripts = Array.from(result).map(alternative => alternative.transcript);
+                const reminderTranscript = transcripts.find(transcript => handleReminderCommand(transcript.toLowerCase()));
+
+                if (reminderTranscript) return;
+
+                handleVoiceCommand(transcripts[0]);
             };
 
             themeRecognition.onerror = (event) => {
@@ -418,7 +526,7 @@
 
             themeRecognition.onend = () => {
                 isThemeListening = false;
-                if (shouldKeepThemeListening) {
+                if (shouldKeepThemeListening && !isReminderAnnouncementSpeaking) {
                     setTimeout(startThemeRecognition, 500);
                 }
             };
@@ -451,10 +559,10 @@
         async function fetchUsername() {
             try {
                 const res = await apiRequestUser(`/me`, 'GET');
-                document.getElementById('username').textContent =  res.username || 'User';
+                updateWelcomeCard(res.username || 'User');
             } catch (error){
                 console.error('Failed to fetch user info:', error);
-                document.getElementById('username').textContent = 'User';
+                updateWelcomeCard('User');
                 
             }
         }
@@ -651,9 +759,23 @@
         }
 
         function getDueDateReminderMessages() {
-            return getDueDateReminderItems().map(reminder => {
+            const userName = getDashboardUserName();
+            const reminders = getDueDateReminderItems();
+            const todayCount = reminders.filter(reminder => reminder.type === 'due-today').length;
+
+            return reminders.map((reminder, index) => {
                 const taskTitle = reminder.todo.title || 'Untitled task';
-                return `${reminder.title}: ${taskTitle}.`;
+                const dueText = getReadableDueDate(reminder.todo.dueDate, reminder.type);
+
+                if (reminder.type === 'due-today') {
+                    if (index === 0 && todayCount > 1) {
+                        return `${userName}, you have ${todayCount} tasks for today. First, ${taskTitle} should be finished ${dueText}.`;
+                    }
+
+                    return `Your task ${taskTitle} should be finished ${dueText}.`;
+                }
+
+                return `A quick reminder, ${taskTitle} is due ${dueText}.`;
             });
         }
 
@@ -700,7 +822,92 @@
 
             const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
             toast.show();
+            speakReminderAnnouncement(getReminderSpeechMessage(todo, reminderType));
             toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        function getReminderSpeechMessage(todo, reminderType) {
+            const taskTitle = todo.title || 'Untitled task';
+            const dueText = getReadableDueDate(todo.dueDate, reminderType);
+
+            if (reminderType === 'due-today') {
+                return `Reminder, ${taskTitle} should be finished ${dueText}.`;
+            }
+
+            if (reminderType === 'due-tomorrow') {
+                return `A quick reminder, ${taskTitle} is due ${dueText}.`;
+            }
+
+            return `Reminder: ${taskTitle} needs your attention.`;
+        }
+
+        function speakReminderAnnouncement(message) {
+            if (!message || !('speechSynthesis' in window)) return;
+
+            speakReminderQueue([message]);
+        }
+
+        function createReminderUtterance(message) {
+            const utterance = new SpeechSynthesisUtterance(message);
+            const voice = getBestReminderVoice();
+
+            if (voice) {
+                utterance.voice = voice;
+                utterance.lang = voice.lang;
+            } else {
+                utterance.lang = 'en-IN';
+            }
+
+            utterance.rate = 0.92;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            return utterance;
+        }
+
+        function getBestReminderVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices.length) return null;
+
+            const preferredVoiceNames = ['natural', 'online', 'neural', 'google', 'microsoft', 'zira', 'aria', 'ravi', 'heera'];
+            const preferredLanguages = ['en-IN', 'en-GB', 'en-US'];
+
+            return voices
+                .filter(voice => voice.lang && voice.lang.toLowerCase().startsWith('en'))
+                .sort((a, b) => scoreReminderVoice(b, preferredVoiceNames, preferredLanguages) - scoreReminderVoice(a, preferredVoiceNames, preferredLanguages))[0] || null;
+        }
+
+        function scoreReminderVoice(voice, preferredVoiceNames, preferredLanguages) {
+            const name = voice.name.toLowerCase();
+            let score = 0;
+
+            const languageIndex = preferredLanguages.indexOf(voice.lang);
+            if (languageIndex !== -1) score += 30 - languageIndex * 5;
+            if (voice.localService === false) score += 8;
+            if (preferredVoiceNames.some(preferredName => name.includes(preferredName))) score += 12;
+
+            return score;
+        }
+
+        function getDashboardUserName() {
+            const usernameEl = document.getElementById('username');
+            const username = usernameEl ? usernameEl.textContent.trim() : '';
+
+            return username && username !== 'User' ? username : 'You';
+        }
+
+        function getReadableDueDate(dueDate, reminderType) {
+            if (reminderType === 'due-today') return 'today';
+            if (reminderType === 'due-tomorrow') return 'tomorrow';
+
+            const parsedDate = parseLocalDate(dueDate);
+            if (!parsedDate) return 'soon';
+
+            return parsedDate.toLocaleDateString('en-IN', {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
         function parseLocalDate(value) {
@@ -856,7 +1063,6 @@
         // Init
         window.onload = () => { 
         initVoiceThemeSwitcher();
-        printUserName();
         updateGreeting();
         fetchUsername();
         loadTodos();
@@ -943,11 +1149,15 @@ async function refreshAccessToken() {
 
 
 
-//user name printing
-function printUserName() {
-    const isFirstLogin = !localStorage.getItem('hasLoggedInBefore');
-    document.getElementById('username').textContent =
-        isFirstLogin ? 'Welcome,' : 'Welcome back,';
+// user name printing
+function updateWelcomeCard(username) {
+    const safeUsername = username || 'User';
+    const welcomeKey = `hasVisitedDashboard:${safeUsername}`;
+    const hasVisitedBefore = localStorage.getItem(welcomeKey);
 
-    localStorage.setItem('hasLoggedInBefore', 'true');
+    document.getElementById('welcomeMessage').textContent =
+        hasVisitedBefore ? 'Welcome back,' : 'Welcome,';
+    document.getElementById('username').textContent = safeUsername;
+
+    localStorage.setItem(welcomeKey, 'true');
 }
