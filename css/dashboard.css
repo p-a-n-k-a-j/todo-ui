@@ -1,5 +1,5 @@
 
-  body { background: #f8f9fa; }
+  body { background: #f8f9fa; transition: background-color 0.3s ease, color 0.3s ease; }
         .todo-card.completed { opacity: 0.65; text-decoration: line-through; }
         .priority-high { color: #dc3545; }
         .priority-medium { color: #ffc107; }
@@ -14,4 +14,94 @@
   background-color: #f0f8ff;
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+body.theme-dark {
+  background: #121212;
+  color: #f8f9fa;
+}
+
+body.theme-dark .navbar,
+body.theme-dark .card,
+body.theme-dark .modal-content,
+body.theme-dark .welcome-box {
+  background-color: #1f1f1f !important;
+  color: #f8f9fa;
+}
+
+body.theme-dark .navbar-brand,
+body.theme-dark .card-title,
+body.theme-dark .text-dark {
+  color: #f8f9fa !important;
+}
+
+body.theme-dark .text-muted {
+  color: #adb5bd !important;
+}
+
+body.theme-dark .form-control,
+body.theme-dark .form-select {
+  background-color: #2b2b2b;
+  border-color: #444;
+  color: #f8f9fa;
+}
+
+body.theme-yellow {
+  background: #fff8d6;
+  color: #3d3200;
+}
+
+body.theme-yellow .navbar,
+body.theme-yellow .card,
+body.theme-yellow .modal-content,
+body.theme-yellow .welcome-box {
+  background-color: #fff3b0 !important;
+  color: #3d3200;
+}
+
+body.theme-yellow .navbar-brand,
+body.theme-yellow .card-title,
+body.theme-yellow .text-dark {
+  color: #3d3200 !important;
+}
+
+body.theme-yellow .text-muted {
+  color: #7a6500 !important;
+}
+
+body.theme-yellow .form-control,
+body.theme-yellow .form-select {
+  background-color: #fffbe6;
+  border-color: #d9bd45;
+  color: #3d3200;
+}
+
+body.theme-blue {
+  background: #eaf4ff;
+  color: #102a43;
+}
+
+body.theme-blue .navbar,
+body.theme-blue .card,
+body.theme-blue .modal-content,
+body.theme-blue .welcome-box {
+  background-color: #d7ecff !important;
+  color: #102a43;
+}
+
+body.theme-blue .navbar-brand,
+body.theme-blue .card-title,
+body.theme-blue .text-dark {
+  color: #102a43 !important;
+}
+
+body.theme-blue .text-muted {
+  color: #486581 !important;
+}
+
+body.theme-blue .form-control,
+body.theme-blue .form-select {
+  background-color: #f5fbff;
+  border-color: #8ec5f4;
+  color: #102a43;
 }

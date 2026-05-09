@@ -6,6 +6,102 @@
         let currentFilter = 'all'; // all | active | completed
         let currentSort = 'createdDesc';
         let deletingId = null;
+        let themeRecognition = null;
+        let isThemeListening = false;
+        let shouldKeepThemeListening = true;
+
+        function applyTheme(theme) {
+            document.body.classList.remove('theme-dark', 'theme-yellow', 'theme-blue');
+
+            if (theme === 'dark') {
+                document.body.classList.add('theme-dark');
+            }
+
+            if (theme === 'yellow') {
+                document.body.classList.add('theme-yellow');
+            }
+
+            if (theme === 'blue') {
+                document.body.classList.add('theme-blue');
+            }
+
+            localStorage.setItem('dashboardTheme', theme);
+        }
+
+        function handleThemeCommand(command) {
+            const spokenText = command.toLowerCase();
+
+            if (spokenText.includes('dark')) {
+                applyTheme('dark');
+                return;
+            }
+
+            if (spokenText.includes('light')) {
+                applyTheme('light');
+                return;
+            }
+
+            if (spokenText.includes('yellow')) {
+                applyTheme('yellow');
+                return;
+            }
+
+            if (spokenText.includes('blue')) {
+                applyTheme('blue');
+            }
+        }
+
+        function initVoiceThemeSwitcher() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            const savedTheme = localStorage.getItem('dashboardTheme') || 'light';
+            applyTheme(savedTheme);
+
+            if (!SpeechRecognition) {
+                console.warn('Voice theme switching is not supported in this browser.');
+                return;
+            }
+
+            themeRecognition = new SpeechRecognition();
+            themeRecognition.lang = 'en-US';
+            themeRecognition.continuous = true;
+            themeRecognition.interimResults = false;
+
+            themeRecognition.onstart = () => {
+                isThemeListening = true;
+            };
+
+            themeRecognition.onresult = (event) => {
+                const transcript = event.results[event.results.length - 1][0].transcript;
+                handleThemeCommand(transcript);
+            };
+
+            themeRecognition.onerror = (event) => {
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    shouldKeepThemeListening = false;
+                    console.warn('Voice theme switching needs microphone permission.');
+                }
+            };
+
+            themeRecognition.onend = () => {
+                isThemeListening = false;
+                if (shouldKeepThemeListening) {
+                    setTimeout(startThemeRecognition, 500);
+                }
+            };
+
+            startThemeRecognition();
+        }
+
+        function startThemeRecognition() {
+            if (!themeRecognition || isThemeListening) return;
+
+            try {
+                themeRecognition.start();
+            } catch (error) {
+                console.warn('Voice recognition could not start:', error);
+            }
+        }
 
         // Greeting
         function updateGreeting() {
@@ -292,6 +388,7 @@
 
         // Init
         window.onload = () => { 
+        initVoiceThemeSwitcher();
         printUserName();
         updateGreeting();
         fetchUsername();
