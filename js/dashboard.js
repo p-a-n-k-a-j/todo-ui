@@ -11,44 +11,377 @@
         let shouldKeepThemeListening = true;
 
         function applyTheme(theme) {
-            document.body.classList.remove('theme-dark', 'theme-yellow', 'theme-blue');
+            clearCustomThemeStyles();
+            document.body.classList.remove('theme-dark', 'theme-custom');
 
             if (theme === 'dark') {
                 document.body.classList.add('theme-dark');
+                localStorage.setItem('dashboardTheme', theme);
+                showVoiceFeedback('Dark theme applied');
+                return;
             }
 
-            if (theme === 'yellow') {
-                document.body.classList.add('theme-yellow');
+            if (theme === 'light') {
+                localStorage.setItem('dashboardTheme', theme);
+                showVoiceFeedback('Light theme applied');
+                return;
             }
 
-            if (theme === 'blue') {
-                document.body.classList.add('theme-blue');
-            }
-
-            localStorage.setItem('dashboardTheme', theme);
+            applyCustomColorTheme(theme);
         }
 
-        function handleThemeCommand(command) {
+        function applyCustomColorTheme(color) {
+            const readableTheme = getReadableThemeColors(color);
+
+            document.body.classList.add('theme-custom');
+            document.body.style.setProperty('--theme-bg', readableTheme.background);
+            document.body.style.setProperty('--theme-surface', readableTheme.surface);
+            document.body.style.setProperty('--theme-input', readableTheme.input);
+            document.body.style.setProperty('--theme-border', readableTheme.border);
+            document.body.style.setProperty('--theme-text', readableTheme.text);
+            document.body.style.setProperty('--theme-muted', readableTheme.muted);
+
+            localStorage.setItem('dashboardTheme', color);
+            showVoiceFeedback(`${capitalize(color)} theme applied`);
+        }
+
+        function handleVoiceCommand(command) {
             const spokenText = command.toLowerCase();
+
+            if (handleThemeCommand(spokenText)) return;
+            if (handleScrollCommand(spokenText)) return;
+            if (handleCloseTaskModalCommand(spokenText)) return;
+            if (handleAddTaskCommand(spokenText)) return;
+            if (handleFilterCommand(spokenText)) return;
+            if (handleSortCommand(spokenText)) return;
+            handleReminderCommand(spokenText);
+        }
+
+        function handleThemeCommand(spokenText) {
+            const spokenColor = extractCssColorFromSpeech(spokenText);
+            if (spokenColor) {
+                applyTheme(spokenColor);
+                return true;
+            }
 
             if (spokenText.includes('dark')) {
                 applyTheme('dark');
-                return;
+                return true;
             }
 
             if (spokenText.includes('light')) {
                 applyTheme('light');
+                return true;
+            }
+
+            return false;
+        }
+
+        function handleFilterCommand(spokenText) {
+            const words = getSpeechKeywords(spokenText);
+
+            if (hasAnyKeyword(words, ['today', 'aaj'])) {
+                setFilter('today');
+                showVoiceFeedback("Showing today's tasks");
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['overdue', 'late', 'missed', 'expired'])) {
+                setFilter('overdue');
+                showVoiceFeedback('Showing overdue tasks');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['upcoming', 'future', 'next', 'coming'])) {
+                setFilter('upcoming');
+                showVoiceFeedback('Showing upcoming tasks');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['completed', 'complete', 'done', 'finished'])) {
+                setFilter('completed');
+                showVoiceFeedback('Showing completed tasks');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['active', 'pending', 'incomplete', 'remaining', 'open'])) {
+                setFilter('active');
+                showVoiceFeedback('Showing active tasks');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['all', 'everything', 'sab'])) {
+                setFilter('all');
+                showVoiceFeedback('Showing all tasks');
+                return true;
+            }
+
+            return false;
+        }
+
+        function handleSortCommand(spokenText) {
+            const words = getSpeechKeywords(spokenText);
+
+            if (hasAnyKeyword(words, ['newest', 'new', 'latest', 'recent', 'fresh'])) {
+                setSort('createdDesc', 'Sorted by newest');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['oldest', 'old', 'earliest', 'previous', 'purana'])) {
+                setSort('createdAsc', 'Sorted by oldest');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['due', 'soon', 'deadline', 'date'])) {
+                setSort('dueAsc', 'Sorted by due date');
+                return true;
+            }
+
+            if (hasAnyKeyword(words, ['priority', 'important', 'urgent', 'high'])) {
+                setSort('priorityDesc', 'Sorted by priority');
+                return true;
+            }
+
+            return false;
+        }
+
+        function handleScrollCommand(spokenText) {
+            const scrollIntent = getScrollIntent(spokenText);
+
+            if (scrollIntent === 'bottom') {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                return true;
+            }
+
+            if (scrollIntent === 'top') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return true;
+            }
+
+            if (scrollIntent === 'down') {
+                window.scrollBy({ top: window.innerHeight * 0.75, behavior: 'smooth' });
+                return true;
+            }
+
+            if (scrollIntent === 'up') {
+                window.scrollBy({ top: -window.innerHeight * 0.75, behavior: 'smooth' });
+                return true;
+            }
+
+            return false;
+        }
+
+        function getScrollIntent(spokenText) {
+            const words = getSpeechKeywords(spokenText);
+            const normalizedWords = words.map(normalizeSpeechKeyword);
+
+            if (hasAnyKeyword(normalizedWords, ['bottom'])) return 'bottom';
+            if (hasAnyKeyword(normalizedWords, ['top'])) return 'top';
+            if (hasAnyKeyword(normalizedWords, ['down', 'neeche'])) return 'down';
+            if (hasAnyKeyword(normalizedWords, ['up', 'upar'])) return 'up';
+
+            return null;
+        }
+
+        function handleAddTaskCommand(spokenText) {
+            const words = getSpeechKeywords(spokenText);
+            const hasCreateIntent = hasAnyKeyword(words, ['create', 'add', 'open', 'make', 'bana', 'banaye', 'banate', 'karte']);
+            const hasTaskContext = hasAnyKeyword(words, ['task', 'todo', 'work', 'modal']);
+            const hasCreatorContext = words.includes('creator') || (words.includes('create') && words.includes('modal'));
+
+            if (hasCreateIntent && (hasTaskContext || hasCreatorContext || (words.includes('create') && words.length <= 3))) {
+                openAddModal();
+                todoModal.show();
+                showVoiceFeedback('New task opened');
+                return true;
+            }
+
+            return false;
+        }
+
+        function handleCloseTaskModalCommand(spokenText) {
+            const words = getSpeechKeywords(spokenText);
+            const hasCloseIntent = hasAnyKeyword(words, ['close', 'cancel', 'exit', 'stop', 'band', 'bandh', 'nahi']);
+            const hasTaskModalContext = hasAnyKeyword(words, ['modal', 'task', 'creator']) || words.length <= 3;
+
+            if (hasCloseIntent && hasTaskModalContext && isTodoModalOpen()) {
+                todoModal.hide();
+                showVoiceFeedback('Task creator closed');
+                return true;
+            }
+
+            return false;
+        }
+
+        function handleReminderCommand(spokenText) {
+            if (spokenText.includes('announce reminders') || spokenText.includes('read reminders') || spokenText.includes('read my reminders') || spokenText.includes('task reminders')) {
+                announceDueDateReminders();
+                return true;
+            }
+
+            return false;
+        }
+
+        function setSort(sortValue, message) {
+            currentSort = sortValue;
+            document.getElementById('sortSelect').value = sortValue;
+            renderTodos();
+            showVoiceFeedback(message);
+        }
+
+        function getSpeechKeywords(spokenText) {
+            return spokenText
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .split(/\s+/)
+                .filter(Boolean);
+        }
+
+        function normalizeSpeechKeyword(word) {
+            const keywordMap = {
+                below: 'down',
+                downward: 'down',
+                downstairs: 'down',
+                bottom: 'bottom',
+                end: 'bottom',
+                neeche: 'neeche',
+                niche: 'neeche',
+                nicha: 'neeche',
+                neechay: 'neeche',
+                down: 'down',
+                above: 'up',
+                upward: 'up',
+                upstairs: 'up',
+                upar: 'upar',
+                upper: 'upar',
+                oopar: 'upar',
+                up: 'up',
+                top: 'top',
+                start: 'top'
+            };
+
+            return keywordMap[word] || word;
+        }
+
+        function hasAnyKeyword(words, keywords) {
+            return keywords.some(keyword => words.includes(keyword));
+        }
+
+        function showVoiceFeedback(message) {
+            if (!message) return;
+            console.log(`Voice command: ${message}`);
+        }
+
+        function announceDueDateReminders() {
+            const reminders = getDueDateReminderMessages();
+
+            if (reminders.length === 0) {
+                speakMessage('You have no tasks due today or tomorrow.');
                 return;
             }
 
-            if (spokenText.includes('yellow')) {
-                applyTheme('yellow');
+            speakMessage(reminders.join(' '));
+        }
+
+        function speakMessage(message) {
+            if (!('speechSynthesis' in window)) {
+                console.log(message);
                 return;
             }
 
-            if (spokenText.includes('blue')) {
-                applyTheme('blue');
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
+        }
+
+        function capitalize(value) {
+            return value.charAt(0).toUpperCase() + value.slice(1);
+        }
+
+        function extractCssColorFromSpeech(spokenText) {
+            const cleanedText = spokenText
+                .replace(/\b(change|switch|set|make|apply|use|theme|background|color|colour|to|please)\b/g, ' ')
+                .replace(/[^a-z0-9\s#(),.%]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!cleanedText) return null;
+
+            const words = cleanedText.split(' ');
+            for (let length = words.length; length >= 1; length--) {
+                for (let start = 0; start <= words.length - length; start++) {
+                    const phrase = words.slice(start, start + length).join(' ');
+                    const compactPhrase = phrase.replace(/\s+/g, '');
+
+                    if (isValidCssColor(phrase)) return phrase;
+                    if (compactPhrase !== phrase && isValidCssColor(compactPhrase)) return compactPhrase;
+                }
             }
+
+            return null;
+        }
+
+        function isValidCssColor(value) {
+            if (!value || value === 'dark' || value === 'light') return false;
+            return CSS.supports('color', value);
+        }
+
+        function getReadableThemeColors(color) {
+            const rgb = getRgbFromCssColor(color);
+            if (!rgb) {
+                return {
+                    background: color,
+                    surface: color,
+                    input: color,
+                    border: color,
+                    text: '#212529',
+                    muted: '#6c757d'
+                };
+            }
+
+            const isDarkColor = getRelativeLuminance(rgb) < 0.45;
+            const text = isDarkColor ? '#f8f9fa' : '#212529';
+
+            return {
+                background: color,
+                surface: mixColor(rgb, isDarkColor ? [255, 255, 255] : [0, 0, 0], isDarkColor ? 0.12 : 0.08),
+                input: mixColor(rgb, isDarkColor ? [255, 255, 255] : [255, 255, 255], isDarkColor ? 0.18 : 0.72),
+                border: mixColor(rgb, isDarkColor ? [255, 255, 255] : [0, 0, 0], isDarkColor ? 0.28 : 0.18),
+                text,
+                muted: isDarkColor ? '#ced4da' : '#495057'
+            };
+        }
+
+        function getRgbFromCssColor(color) {
+            const colorProbe = document.createElement('span');
+            colorProbe.style.color = color;
+            document.body.appendChild(colorProbe);
+
+            const computedColor = getComputedStyle(colorProbe).color;
+            colorProbe.remove();
+
+            const match = computedColor.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (!match) return null;
+
+            return [Number(match[1]), Number(match[2]), Number(match[3])];
+        }
+
+        function getRelativeLuminance(rgb) {
+            const [red, green, blue] = rgb.map(value => {
+                const channel = value / 255;
+                return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+            });
+
+            return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        }
+
+        function mixColor(rgb, targetRgb, amount) {
+            const mixed = rgb.map((channel, index) => Math.round(channel + (targetRgb[index] - channel) * amount));
+            return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
+        }
+
+        function clearCustomThemeStyles() {
+            ['--theme-bg', '--theme-surface', '--theme-input', '--theme-border', '--theme-text', '--theme-muted']
+                .forEach(property => document.body.style.removeProperty(property));
         }
 
         function initVoiceThemeSwitcher() {
@@ -73,7 +406,7 @@
 
             themeRecognition.onresult = (event) => {
                 const transcript = event.results[event.results.length - 1][0].transcript;
-                handleThemeCommand(transcript);
+                handleVoiceCommand(transcript);
             };
 
             themeRecognition.onerror = (event) => {
@@ -140,6 +473,7 @@
     }
 
     renderTodos();
+    showDueDateReminders();
   } catch (err) {
     console.error("Error loading todos:", err);
     showAlert("Failed to load todos. Please try again later.", "danger");
@@ -155,6 +489,9 @@
             // Filter
             if (currentFilter === 'active') list = list.filter(t => !t.completed);
             if (currentFilter === 'completed') list = list.filter(t => t.completed);
+            if (currentFilter === 'today') list = list.filter(t => !t.completed && isTaskDueToday(t));
+            if (currentFilter === 'overdue') list = list.filter(t => !t.completed && isTaskOverdue(t));
+            if (currentFilter === 'upcoming') list = list.filter(t => !t.completed && isTaskUpcoming(t));
 
             // Sort
             list.sort((a, b) => {
@@ -283,11 +620,140 @@
             return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
+        function showDueDateReminders() {
+            getDueDateReminderItems().forEach(reminder => {
+                showReminderToast(reminder.todo, reminder.type, reminder.title);
+            });
+        }
+
+        function getDueDateReminderItems() {
+            const today = startOfDay(new Date());
+            const reminders = [];
+
+            todos.forEach(todo => {
+                if (!todo.dueDate || todo.completed) return;
+
+                const dueDate = parseLocalDate(todo.dueDate);
+                if (!dueDate) return;
+
+                const daysUntilDue = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
+
+                if (daysUntilDue === 0) {
+                    reminders.push({ todo, type: 'due-today', title: 'Due today' });
+                }
+
+                if (daysUntilDue === 1) {
+                    reminders.push({ todo, type: 'due-tomorrow', title: 'Due tomorrow' });
+                }
+            });
+
+            return reminders;
+        }
+
+        function getDueDateReminderMessages() {
+            return getDueDateReminderItems().map(reminder => {
+                const taskTitle = reminder.todo.title || 'Untitled task';
+                return `${reminder.title}: ${taskTitle}.`;
+            });
+        }
+
+        function showReminderToast(todo, reminderType, reminderTitle) {
+            const container = document.getElementById('reminderToastContainer');
+            if (!container) return;
+
+            const reminderKey = `taskmind-reminder-${reminderType}-${todo.id || todo.title}`;
+            if (sessionStorage.getItem(reminderKey)) return;
+            sessionStorage.setItem(reminderKey, 'shown');
+
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast reminder-toast ${reminderType}`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+
+            const header = document.createElement('div');
+            header.className = 'toast-header';
+
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-bell text-primary me-2';
+
+            const title = document.createElement('strong');
+            title.className = 'me-auto';
+            title.textContent = reminderTitle;
+
+            const closeButton = document.createElement('button');
+            closeButton.type = 'button';
+            closeButton.className = 'btn-close';
+            closeButton.setAttribute('data-bs-dismiss', 'toast');
+            closeButton.setAttribute('aria-label', 'Close');
+
+            const body = document.createElement('div');
+            body.className = 'toast-body';
+            body.textContent = `${todo.title || 'Untitled task'} needs your attention.`;
+
+            header.appendChild(icon);
+            header.appendChild(title);
+            header.appendChild(closeButton);
+            toastEl.appendChild(header);
+            toastEl.appendChild(body);
+            container.appendChild(toastEl);
+
+            const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        function parseLocalDate(value) {
+            if (!value) return null;
+
+            const dateText = String(value).slice(0, 10);
+            const parts = dateText.split('-').map(Number);
+            if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+
+            return startOfDay(new Date(parts[0], parts[1] - 1, parts[2]));
+        }
+
+        function startOfDay(date) {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function isTaskDueToday(todo) {
+            if (!todo.dueDate) return false;
+
+            const today = startOfDay(new Date());
+            const dueDate = parseLocalDate(todo.dueDate);
+
+            return dueDate && dueDate.getTime() === today.getTime();
+        }
+
+        function isTaskOverdue(todo) {
+            if (!todo.dueDate) return false;
+
+            const today = startOfDay(new Date());
+            const dueDate = parseLocalDate(todo.dueDate);
+
+            return dueDate && dueDate < today;
+        }
+
+        function isTaskUpcoming(todo) {
+            if (!todo.dueDate) return false;
+
+            const today = startOfDay(new Date());
+            const dueDate = parseLocalDate(todo.dueDate);
+
+            return dueDate && dueDate > today;
+        }
+
+        function isTodoModalOpen() {
+            return todoModalEl.classList.contains('show');
+        }
+
         // Open Add/Edit
         const todoModalEl = document.getElementById('todoModal');
         const todoModal = new bootstrap.Modal(todoModalEl);
         function openAddModal() {
-            document.getElementById('modalTitle').textContent = 'Add Todo';
+            document.getElementById('modalTitle').textContent = 'Create Task';
+            document.getElementById('todoSubmitBtn').innerHTML = '<i class="fa-solid fa-save me-1"></i> Create Task';
             document.getElementById('todoForm').reset();
             document.getElementById('todoId').value = '';
         }
@@ -295,6 +761,7 @@
             const t = todos.find(x => x.id === id);
             if (!t) return;
             document.getElementById('modalTitle').textContent = 'Edit Todo';
+            document.getElementById('todoSubmitBtn').innerHTML = '<i class="fa-solid fa-save me-1"></i> Save';
             document.getElementById('todoId').value = t.id;
             document.getElementById('title').value = t.title || '';
             document.getElementById('description').value = t.description || '';

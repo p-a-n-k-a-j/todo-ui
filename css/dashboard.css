@@ -46,62 +46,54 @@ body.theme-dark .form-select {
   color: #f8f9fa;
 }
 
-body.theme-yellow {
-  background: #fff8d6;
-  color: #3d3200;
+body.theme-custom {
+  background: var(--theme-bg);
+  color: var(--theme-text);
 }
 
-body.theme-yellow .navbar,
-body.theme-yellow .card,
-body.theme-yellow .modal-content,
-body.theme-yellow .welcome-box {
-  background-color: #fff3b0 !important;
-  color: #3d3200;
+body.theme-custom .navbar,
+body.theme-custom .card,
+body.theme-custom .modal-content,
+body.theme-custom .welcome-box {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text);
 }
 
-body.theme-yellow .navbar-brand,
-body.theme-yellow .card-title,
-body.theme-yellow .text-dark {
-  color: #3d3200 !important;
+body.theme-custom .navbar-brand,
+body.theme-custom .card-title,
+body.theme-custom .text-dark {
+  color: var(--theme-text) !important;
 }
 
-body.theme-yellow .text-muted {
-  color: #7a6500 !important;
+body.theme-custom .text-muted {
+  color: var(--theme-muted) !important;
 }
 
-body.theme-yellow .form-control,
-body.theme-yellow .form-select {
-  background-color: #fffbe6;
-  border-color: #d9bd45;
-  color: #3d3200;
+body.theme-custom .form-control,
+body.theme-custom .form-select {
+  background-color: var(--theme-input);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
 }
 
-body.theme-blue {
-  background: #eaf4ff;
-  color: #102a43;
+.reminder-toast {
+  border-left: 4px solid #0d6efd;
 }
 
-body.theme-blue .navbar,
-body.theme-blue .card,
-body.theme-blue .modal-content,
-body.theme-blue .welcome-box {
-  background-color: #d7ecff !important;
-  color: #102a43;
+.reminder-toast.due-today {
+  border-left-color: #dc3545;
 }
 
-body.theme-blue .navbar-brand,
-body.theme-blue .card-title,
-body.theme-blue .text-dark {
-  color: #102a43 !important;
+.reminder-toast.due-tomorrow {
+  border-left-color: #ffc107;
 }
 
-body.theme-blue .text-muted {
-  color: #486581 !important;
+body.theme-dark .reminder-toast {
+  background-color: #1f1f1f;
+  color: #f8f9fa;
 }
 
-body.theme-blue .form-control,
-body.theme-blue .form-select {
-  background-color: #f5fbff;
-  border-color: #8ec5f4;
-  color: #102a43;
+body.theme-custom .reminder-toast {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
 }
